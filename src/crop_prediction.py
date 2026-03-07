@@ -1,10 +1,11 @@
-def recommend_crop(temp, humidity):
+import joblib
 
-    if temp > 25 and humidity > 60:
-        return "Rice"
+model = joblib.load("models/crop_model.pkl")
 
-    elif temp > 20:
-        return "Wheat"
+def recommend_crop(N,P,K,temp,humidity,ph,rainfall):
 
-    else:
-        return "Maize"
+    data = [[N,P,K,temp,humidity,ph,rainfall]]
+
+    prediction = model.predict(data)
+
+    return prediction[0]
