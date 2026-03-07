@@ -30,6 +30,16 @@ and sustainable farming.
 ## ▶️ How to Run
 1. Clone the repository
 
+## Hardware Components
+- ESP32 / Arduino
+- Soil Moisture Sensor
+- DHT11 Temperature & Humidity Sensor
+- Rain Sensor
+- pH Sensor
+- Relay Module
+- Water Pump
+
+  
 ## ⭐ Note
 This project is under active development and will be enhanced
 with real-time data, IoT integration, and advanced AI models.
