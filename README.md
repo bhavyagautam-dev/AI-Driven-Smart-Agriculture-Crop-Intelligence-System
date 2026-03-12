@@ -1,64 +1,155 @@
 # 🌱 AI-Driven Smart Agriculture & Crop Intelligence System
 
 ## 📌 Overview
-This project focuses on building an AI-driven smart agriculture system
-to assist farmers in making data-driven decisions for better crop yield
-and sustainable farming.
+
+The **AI-Driven Smart Agriculture & Crop Intelligence System** is an intelligent farming assistant designed to help farmers make **data-driven decisions**.
+The system combines **Machine Learning, Web Technologies, and IoT integration** to recommend suitable crops and provide smart agricultural insights.
+
+This project uses a **Flask-based web dashboard** where users can input environmental parameters such as soil nutrients, temperature, humidity, pH, and rainfall to receive **AI-based crop recommendations**.
+
+Future enhancements include **real-time IoT sensor integration** for automated monitoring and irrigation suggestions.
+
+---
 
 ## 🚀 Features
-- Crop recommendation using Machine Learning
-- Crop disease detection
-- Yield prediction
-- Smart irrigation suggestions
-- Data visualization dashboard
+
+* 🌾 **AI Crop Recommendation System**
+* 📊 **Interactive Web Dashboard**
+* 🧠 **Machine Learning Model (Random Forest)**
+* 🌡️ **Environmental Data Input (NPK, Temperature, Humidity, pH, Rainfall)**
+* 🔌 **IoT Sensor Data Integration (Future Scope)**
+* 🌍 **Farmer Decision Support System**
+
+---
 
 ## 🧠 Technologies Used
-- Python
-- Machine Learning
-- Pandas, NumPy, Scikit-learn
-- Flask / Streamlit
-- IoT (Future Scope)
+
+### Backend
+
+* Python
+* Flask
+
+### Machine Learning
+
+* Scikit-Learn
+* Pandas
+* NumPy
+* Joblib
+
+### Frontend
+
+* HTML
+* CSS
+* JavaScript (basic)
+
+### Dataset
+
+* Kaggle Crop Recommendation Dataset
+
+### Hardware (Future Scope)
+
+* Arduino / ESP32
+* Soil Moisture Sensor
+* DHT11 Temperature & Humidity Sensor
+* Relay Module
+* Water Pump
+
+---
 
 ## 📂 Project Structure
-- dataset/ → Crop dataset used for training  
-- src/ → Machine learning and logic scripts  
-- iot/ → Sensor data simulation and IoT integration  
-- models/ → Trained machine learning models  
-- app/ → Streamlit dashboard application
 
-## ▶️ How to Run
-1. Clone the repository
+```
+AI-Driven-Smart-Agriculture-Crop-Intelligence-System
 
-2. Install dependencies
+app/
+   app.py
+   templates/
+       index.html
+   static/
+       style.css
 
+dataset/
+   crop_data.csv
+
+models/
+   crop_model.pkl
+
+src/
+   train_model.py
+   test_model.py
+
+README.md
+requirements.txt
+```
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1️⃣ Clone the repository
+
+```
+git clone https://github.com/your-username/AI-Driven-Smart-Agriculture-Crop-Intelligence-System.git
+```
+
+### 2️⃣ Install dependencies
+
+```
 pip install -r requirements.txt
+```
 
-3. Run the dashboard
+### 3️⃣ Train the ML Model
 
-streamlit run app/app.py
+```
+python src/train_model.py
+```
 
-## Hardware Components
-- ESP32 / Arduino
-- Soil Moisture Sensor
-- DHT11 Temperature & Humidity Sensor
-- Rain Sensor
-- pH Sensor
-- Relay Module
-- Water Pump
+### 4️⃣ Run the Flask Application
 
-## System Architecture
-Sensors such as soil moisture, temperature, humidity, and pH sensors
-collect environmental and soil data.
+```
+python app/app.py
+```
 
-These sensors are connected to a microcontroller (ESP32 / Arduino)
-which sends the data to the Python backend system.
+### 5️⃣ Open in browser
 
-The backend processes the sensor data using machine learning models
-to recommend suitable crops and generate irrigation advice.
+```
+http://127.0.0.1:5000
+```
 
-The results are displayed on a Streamlit dashboard where farmers
-can monitor conditions and make better agricultural decisions.  
+---
 
-## ⭐ Note
-This project is under active development and will be enhanced
-with real-time data, IoT integration, and advanced AI models.
+## 📊 System Architecture
+
+```
+Sensors (IoT)
+     ↓
+Arduino / ESP32
+     ↓
+Flask Backend
+     ↓
+Machine Learning Model
+     ↓
+Web Dashboard
+```
+
+---
+
+## 📷 Dashboard Preview
+
+The system includes a **modern web dashboard** where users can enter environmental data and receive crop recommendations powered by AI.
+
+---
+
+## 🔮 Future Enhancements
+
+* Real-time IoT sensor integration
+* Smart irrigation automation
+* Crop disease detection using computer vision
+* Data visualization dashboard
+* Weather API integration
+
+---
+
+## ⭐ Project Status
+
+🚧 Under Active Development
