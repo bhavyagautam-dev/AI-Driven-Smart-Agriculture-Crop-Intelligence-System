@@ -1,30 +1,38 @@
-import streamlit as st
-from iot.sensor_simulation import get_sensor_data
-from src.irrigation import irrigation_advice
-from src.crop_prediction import recommend_crop
+from flask import Flask, render_template, request
+import joblib
 
-st.title("🌱 AI Smart Agriculture IoT System")
+app = Flask(__name__)
 
-st.header("Sensor Data")
+model = joblib.load("models/crop_model.pkl")
 
-sensor_data = get_sensor_data()
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-st.write(sensor_data)
+@app.route("/predict", methods=["POST"])
+def predict():
 
-st.header("AI Crop Recommendation")
+    nitrogen = float(request.form["nitrogen"])
+    phosphorus = float(request.form["phosphorus"])
+    potassium = float(request.form["potassium"])
+    temp = float(request.form["temperature"])
+    humidity = float(request.form["humidity"])
+    ph = float(request.form["ph"])
+    rainfall = float(request.form["rainfall"])
 
-crop = recommend_crop(
-    90, 40, 40,
-    sensor_data["temperature"],
-    sensor_data["humidity"],
-    sensor_data["ph"],
-    120
-)
+    prediction = model.predict([[nitrogen, phosphorus, potassium, temp, humidity, ph, rainfall]])
 
-st.success(f"Recommended Crop: {crop}")
+    return render_template("index.html", prediction=prediction[0])
+@app.route("/sensor-data")
+def sensor_data():
 
-st.header("Smart Irrigation Advice")
+    data = {
+        "temperature":25,
+        "humidity":60,
+        "soil_moisture":45
+    }
 
-irrigation = irrigation_advice(sensor_data["soil_moisture"])
+    return data
 
-st.info(irrigation)
+if __name__ == "__main__":
+    app.run(debug=True)

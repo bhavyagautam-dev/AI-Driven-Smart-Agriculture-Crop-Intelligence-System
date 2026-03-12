@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>AI Smart Agriculture</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<h1>🌱 AI Smart Agriculture Dashboard</h1>
+
+<div class="container">
+    
+<div class="sensor">
+
+<h2>Sensor Data</h2>
+
+<p>Temperature: 25°C</p>
+<p>Humidity: 60%</p>
+<p>Soil Moisture: 45%</p>
+
+</div>
+<h2>Crop Recommendation</h2>
+
+<form action="/predict" method="post">
+
+<input type="number" name="nitrogen" placeholder="Nitrogen"><br>
+<input type="number" name="phosphorus" placeholder="Phosphorus"><br>
+<input type="number" name="potassium" placeholder="Potassium"><br>
+
+<input type="number" name="temperature" placeholder="Temperature"><br>
+<input type="number" name="humidity" placeholder="Humidity"><br>
+<input type="number" name="ph" placeholder="pH"><br>
+<input type="number" name="rainfall" placeholder="Rainfall"><br>
+
+<button type="submit">Predict Crop</button>
+
+</form>
+
+{% if prediction %}
+
+<div class="result">
+Recommended Crop: {{ prediction }}
+</div>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>
