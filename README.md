@@ -152,7 +152,7 @@ The system includes a **modern web dashboard** where users can enter environment
 ## 👨‍💻 Team Members
 
 - **Bhavya Gautam** – Project Developer (AI & Backend)
-- **Bhavya Gautam** – Research & Idea Support
+- **Abhishek Sirohi** – Documentation
 - **Kushagra Sharma** – Presentation
 
 ---
