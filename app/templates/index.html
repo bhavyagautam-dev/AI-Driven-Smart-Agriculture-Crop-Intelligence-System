@@ -1,52 +1,107 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <title>AI Smart Agriculture</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<h1>🌱 AI Smart Agriculture Dashboard</h1>
+<!-- Navbar -->
+<div class="navbar">
+    <h2>🌱 Smart Agriculture</h2>
+    <div>
+        👤 {{ user }}
+        <a href="/history">History</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
 
+<!-- Main -->
 <div class="container">
-    
-<div class="sensor">
 
-<h2>Sensor Data</h2>
+    <!-- Sensor Card -->
+    <div class="card">
+        <h3>📊 Sensor Data</h3>
+        <p>Temp: <span id="temp"></span> °C</p>
+        <p>Humidity: <span id="hum"></span> %</p>
+        <p>Soil: <span id="soil"></span> %</p>
+    </div>
 
-<p>Temperature: 25°C</p>
-<p>Humidity: 60%</p>
-<p>Soil Moisture: 45%</p>
+    <!-- Form Card -->
+    <div class="card">
+        <h3>🌾 Crop Prediction</h3>
+
+        <form action="/predict" method="post">
+            <input name="nitrogen" placeholder="Nitrogen">
+            <input name="phosphorus" placeholder="Phosphorus">
+            <input name="potassium" placeholder="Potassium">
+
+            <input name="temperature" placeholder="Temperature">
+            <input name="humidity" placeholder="Humidity">
+            <input name="ph" placeholder="pH">
+            <input name="rainfall" placeholder="Rainfall">
+
+            <button type="submit">Predict</button>
+        </form>
+
+        {% if prediction %}
+        <div class="result">
+            🌾 {{ prediction }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Graph Card -->
+    <div class="card">
+        <h3>📈 Live Graph</h3>
+        <canvas id="chart"></canvas>
+    </div>
 
 </div>
-<h2>Crop Recommendation</h2>
 
-<form action="/predict" method="post">
+<!-- JS -->
+<script>
+let chart;
 
-<input type="number" name="nitrogen" placeholder="Nitrogen"><br>
-<input type="number" name="phosphorus" placeholder="Phosphorus"><br>
-<input type="number" name="potassium" placeholder="Potassium"><br>
+function updateUI(data){
+    document.getElementById("temp").innerText = data.temperature;
+    document.getElementById("hum").innerText = data.humidity;
+    document.getElementById("soil").innerText = data.soil_moisture;
+}
 
-<input type="number" name="temperature" placeholder="Temperature"><br>
-<input type="number" name="humidity" placeholder="Humidity"><br>
-<input type="number" name="ph" placeholder="pH"><br>
-<input type="number" name="rainfall" placeholder="Rainfall"><br>
+function updateChart(data){
+    const chartData = {
+        labels:["Temp","Humidity","Soil"],
+        datasets:[{
+            label:"Sensor",
+            data:[data.temperature, data.humidity, data.soil_moisture]
+        }]
+    };
 
-<button type="submit">Predict Crop</button>
+    if(chart){
+        chart.data = chartData;
+        chart.update();
+    }else{
+        chart = new Chart(document.getElementById("chart"),{
+            type:"bar",
+            data:chartData
+        });
+    }
+}
 
-</form>
+function loadData(){
+    fetch('/sensor-data')
+    .then(res=>res.json())
+    .then(data=>{
+        updateUI(data);
+        updateChart(data);
+    });
+}
 
-{% if prediction %}
-
-<div class="result">
-Recommended Crop: {{ prediction }}
-</div>
-
-{% endif %}
-
-</div>
+setInterval(loadData,2000);
+</script>
 
 </body>
 </html>
