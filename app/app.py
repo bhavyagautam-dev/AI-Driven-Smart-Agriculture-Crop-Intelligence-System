@@ -6,16 +6,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-# Load ML model
 model = joblib.load("models/crop_model.pkl")
 
 
-# 🗄️ Create Database
+# ================= DATABASE =================
 def create_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
-    # Users table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +22,6 @@ def create_db():
     )
     """)
 
-    # History table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,11 +40,10 @@ def create_db():
     conn.commit()
     conn.close()
 
-
 create_db()
 
 
-# 🔐 Home (Protected)
+# ================= HOME =================
 @app.route("/")
 def home():
     if "user" not in session:
@@ -55,7 +51,7 @@ def home():
     return render_template("index.html", user=session["user"])
 
 
-# 🌾 Prediction + Save History
+# ================= PREDICT =================
 @app.route("/predict", methods=["POST"])
 def predict():
 
@@ -72,7 +68,6 @@ def predict():
 
     prediction = model.predict([[nitrogen, phosphorus, potassium, temp, humidity, ph, rainfall]])
 
-    # 💾 Save history
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
@@ -93,7 +88,7 @@ def predict():
     return render_template("index.html", prediction=prediction[0], user=session["user"])
 
 
-# 🧑‍💻 Register
+# ================= REGISTER =================
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -114,13 +109,12 @@ def register():
             return "User already exists!"
 
         conn.close()
-
         return redirect("/login")
 
     return render_template("register.html")
 
 
-# 🔑 Login
+# ================= LOGIN =================
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -145,14 +139,36 @@ def login():
     return render_template("login.html")
 
 
-# 🚪 Logout
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
-    return redirect("/login")
+# ================= FORGOT PASSWORD =================
+@app.route("/forgot", methods=["GET", "POST"])
+def forgot():
+
+    if request.method == "POST":
+        username = request.form["username"]
+        new_password = generate_password_hash(request.form["password"])
+
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        user = cursor.fetchone()
+
+        if user:
+            cursor.execute(
+                "UPDATE users SET password=? WHERE username=?",
+                (new_password, username)
+            )
+            conn.commit()
+            conn.close()
+            return "Password updated! Go to login."
+        else:
+            conn.close()
+            return "User not found!"
+
+    return render_template("forgot.html")
 
 
-# 📊 History Page
+# ================= HISTORY =================
 @app.route("/history")
 def history():
 
@@ -170,19 +186,24 @@ def history():
     return render_template("history.html", data=data)
 
 
-# 🌡️ Sensor API (dummy)
+# ================= LOGOUT =================
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/login")
+
+
+# ================= SENSOR API =================
 @app.route("/sensor-data")
 def sensor_data():
-
     data = {
         "temperature": 25,
         "humidity": 60,
         "soil_moisture": 45
     }
-
     return data
 
 
-# 🚀 Run
+# ================= RUN =================
 if __name__ == "__main__":
     app.run(debug=True)
