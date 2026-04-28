@@ -59,27 +59,39 @@ Future enhancements include **real-time IoT sensor integration** for automated m
 ## 📂 Project Structure
 
 ```
-AI-Driven-Smart-Agriculture-Crop-Intelligence-System
-
-app/
-   app.py
-   templates/
-       index.html
-   static/
-       style.css
-
-dataset/
-   crop_data.csv
-
-models/
-   crop_model.pkl
-
-src/
-   train_model.py
-   test_model.py
-
-README.md
-requirements.txt
+AI-Driven-Smart-Agriculture-Crop-Intelligence-System/
+│
+├── app/                     # Flask Web Application
+│   ├── static/              # CSS, JS files
+│   │   └── style.css
+│   ├── templates/           # HTML pages
+│   │   ├── index.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── forgot.html
+│   │   └── history.html
+│   ├── app.py               # Main Flask App
+│   └── database.py          # DB helper (optional)
+│
+├── dataset/                 # Dataset for ML
+│   └── crop_data.csv
+│
+├── models/                  # Trained ML model
+│   └── crop_model.pkl
+│
+├── src/                     # Core ML + logic
+│   ├── crop_prediction.py
+│   ├── irrigation.py
+│   ├── train_model.py
+│   └── test_model.py
+│
+├── iot/                     # IoT simulation / sensors
+│   └── sensor_simulation.py
+│
+├── database.db              # SQLite Database
+├── requirements.txt         # Dependencies
+├── README.md                # Documentation
+└── LICENSE
 ```
 
 ---
@@ -107,6 +119,7 @@ python src/train_model.py
 ### 4️⃣ Run the Flask Application
 
 ```
+pip install -r requirements.txt
 python app/app.py
 ```
 
