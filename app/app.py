@@ -12,18 +12,19 @@ app.secret_key = "secret123"
 # ===== MODEL LOAD =====
 model = joblib.load("models/crop_model.pkl")
 
-# ===== GLOBAL SENSOR DATA =====
+# ===== SENSOR DATA STORE =====
 sensor_data = {
     "soil": 0,
     "temp": 0,
-    "humidity": 0
+    "humidity": 0,
+    "motor": "OFF"
 }
 
 # ===== SERIAL CONNECTION =====
 ser = serial.Serial('COM6', 9600, timeout=1)
 time.sleep(2)
 
-# ===== SERIAL READER THREAD =====
+# ===== SERIAL READER =====
 def read_serial():
     global sensor_data
 
@@ -32,7 +33,7 @@ def read_serial():
             line = ser.readline().decode().strip()
 
             if line:
-                print("DATA FROM ARDUINO:", line)
+                print("DATA:", line)
 
                 if "soil" in line:
                     parts = line.split(",")
@@ -40,8 +41,6 @@ def read_serial():
                     for part in parts:
                         if "=" in part:
                             key, value = part.split("=")
-                            key = key.strip()
-                            value = value.strip()
 
                             if key == "soil":
                                 sensor_data["soil"] = int(float(value))
@@ -53,7 +52,7 @@ def read_serial():
         except Exception as e:
             print("ERROR:", e)
 
-# ===== DATABASE INIT =====
+# ===== DATABASE =====
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -86,20 +85,40 @@ def init_db():
 
 init_db()
 
-# ===== HOME =====
+# ===== ROUTES =====
+
 @app.route("/")
 def home():
     if "user" not in session:
         return redirect("/login")
-
     return render_template("index.html", user=session["user"])
 
-# ===== SENSOR DATA API =====
 @app.route("/sensor-data")
 def sensor_api():
     return jsonify(sensor_data)
 
+# ===== MOTOR CONTROL =====
+
+@app.route("/motor/on")
+def motor_on():
+    try:
+        ser.write(b'1')
+        sensor_data["motor"] = "ON"
+        return "ON"
+    except:
+        return "ERROR"
+
+@app.route("/motor/off")
+def motor_off():
+    try:
+        ser.write(b'0')
+        sensor_data["motor"] = "OFF"
+        return "OFF"
+    except:
+        return "ERROR"
+
 # ===== PREDICT =====
+
 @app.route("/predict", methods=["POST"])
 def predict():
 
@@ -114,8 +133,7 @@ def predict():
     ph = float(request.form["ph"])
     rainfall = float(request.form["rainfall"])
 
-    prediction = model.predict([[nitrogen, phosphorus, potassium, temp, humidity, ph, rainfall]])
-    result = prediction[0]
+    result = model.predict([[nitrogen, phosphorus, potassium, temp, humidity, ph, rainfall]])[0]
 
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -130,26 +148,10 @@ def predict():
 
     return render_template("index.html", prediction=result, user=session["user"])
 
-# ===== HISTORY =====
-@app.route("/history")
-def history():
-    if "user" not in session:
-        return redirect("/login")
+# ===== AUTH =====
 
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM history WHERE username=?", (session["user"],))
-    data = cursor.fetchall()
-
-    conn.close()
-
-    return render_template("history.html", data=data)
-
-# ===== REGISTER =====
 @app.route("/register", methods=["GET","POST"])
 def register():
-
     if request.method == "POST":
         username = request.form["username"]
         password = generate_password_hash(request.form["password"])
@@ -157,72 +159,42 @@ def register():
         try:
             conn = sqlite3.connect("database.db")
             cursor = conn.cursor()
-
-            cursor.execute("INSERT INTO users (username,password) VALUES (?,?)",
-                           (username,password))
-
+            cursor.execute("INSERT INTO users (username,password) VALUES (?,?)",(username,password))
             conn.commit()
             conn.close()
-
             return redirect("/login")
-
         except:
-            return "User already exists"
+            return "User exists"
 
     return render_template("register.html")
 
-# ===== LOGIN =====
 @app.route("/login", methods=["GET","POST"])
 def login():
-
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
-
         cursor.execute("SELECT password FROM users WHERE username=?", (username,))
         user = cursor.fetchone()
-
         conn.close()
 
         if user and check_password_hash(user[0], password):
             session["user"] = username
             return redirect("/")
         else:
-            return "Invalid credentials"
+            return "Invalid"
 
     return render_template("login.html")
 
-# ===== LOGOUT =====
 @app.route("/logout")
 def logout():
     session.pop("user", None)
     return redirect("/login")
 
-# ===== FORGOT PASSWORD =====
-@app.route("/forgot", methods=["GET","POST"])
-def forgot():
-
-    if request.method == "POST":
-        username = request.form["username"]
-        new_password = generate_password_hash(request.form["password"])
-
-        conn = sqlite3.connect("database.db")
-        cursor = conn.cursor()
-
-        cursor.execute("UPDATE users SET password=? WHERE username=?",
-                       (new_password, username))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/login")
-
-    return render_template("forgot.html")
-
 # ===== START =====
+
 if __name__ == "__main__":
     t = threading.Thread(target=read_serial)
     t.daemon = True

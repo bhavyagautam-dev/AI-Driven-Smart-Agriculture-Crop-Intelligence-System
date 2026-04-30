@@ -1,74 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Smart Agriculture</title>
+<title>AI Smart Agriculture</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Arial;
+}
 
-    <style>
-        body {
-            background: #0f172a;
-            color: white;
-            font-family: Arial;
-        }
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    padding:15px;
+    background:#1e293b;
+}
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 30px;
-            background: #1e293b;
-        }
+.navbar a{
+    color:white;
+    margin-left:15px;
+    text-decoration:none;
+}
 
-        .navbar a {
-            color: white;
-            margin-left: 15px;
-            text-decoration: none;
-        }
+.container{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    padding:20px;
+}
 
-        .container {
-            display: flex;
-            gap: 20px;
-            padding: 30px;
-            flex-wrap: wrap;
-        }
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:10px;
+    width:300px;
+}
 
-        .card {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-        }
+button{
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            border: none;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #22c55e;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .result {
-            margin-top: 15px;
-            color: #22c55e;
-            font-weight: bold;
-        }
-    </style>
+.on{background:green;color:white;}
+.off{background:red;color:white;}
+</style>
 </head>
 
 <body>
 
-<!-- Navbar -->
+<!-- NAVBAR -->
 <div class="navbar">
     <h2>🌱 Smart Agriculture</h2>
     <div>
@@ -78,96 +63,81 @@
     </div>
 </div>
 
-<!-- Main -->
 <div class="container">
 
-    <!-- Sensor Data -->
-    <div class="card">
-        <h3>📊 Sensor Data</h3>
-        <p>🌡 Temp: <span id="temp">--</span> °C</p>
-        <p>💧 Humidity: <span id="humidity">--</span> %</p>
-        <p>🌱 Soil: <span id="soil">--</span></p>
-    </div>
+<!-- SENSOR DATA -->
+<div class="card">
+<h3>📊 Sensor Data</h3>
+<p>🌡 Temp: <span id="temp">0</span></p>
+<p>💧 Humidity: <span id="humidity">0</span></p>
+<p>🌱 Soil: <span id="soil">0</span></p>
+</div>
 
-    <!-- Prediction -->
-    <div class="card">
-        <h3>🌾 Crop Prediction</h3>
+<!-- MOTOR CONTROL -->
+<div class="card">
+<h3>⚡ Motor Control</h3>
+<button class="on" onclick="onMotor()">ON</button>
+<button class="off" onclick="offMotor()">OFF</button>
+<p>Status: <span id="motor">OFF</span></p>
+</div>
 
-        <form action="/predict" method="post">
-            <input name="nitrogen" placeholder="Nitrogen">
-            <input name="phosphorus" placeholder="Phosphorus">
-            <input name="potassium" placeholder="Potassium">
-
-            <input name="temperature" placeholder="Temperature">
-            <input name="humidity" placeholder="Humidity">
-            <input name="ph" placeholder="pH">
-            <input name="rainfall" placeholder="Rainfall">
-
-            <button type="submit">Predict</button>
-        </form>
-
-        {% if prediction %}
-        <div class="result">
-            🌾 Recommended Crop: {{ prediction }}
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Graph -->
-    <div class="card">
-        <h3>📈 Live Graph</h3>
-        <canvas id="chart"></canvas>
-    </div>
+<!-- GRAPH -->
+<div class="card">
+<h3>📈 Live Graph</h3>
+<canvas id="chart"></canvas>
+</div>
 
 </div>
 
-<!-- JS -->
 <script>
 
 let chart;
 
-function updateUI(data){
-    document.getElementById("temp").innerText = data.temp || 0;
-    document.getElementById("humidity").innerText = data.humidity || 0;
-    document.getElementById("soil").innerText = data.soil || 0;
+function loadData(){
+fetch('/sensor-data')
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById("temp").innerText=data.temp;
+document.getElementById("humidity").innerText=data.humidity;
+document.getElementById("soil").innerText=data.soil;
+document.getElementById("motor").innerText=data.motor;
+
+updateChart(data);
+
+});
+}
+
+function onMotor(){
+fetch('/motor/on')
+.then(()=>{document.getElementById("motor").innerText="ON";});
+}
+
+function offMotor(){
+fetch('/motor/off')
+.then(()=>{document.getElementById("motor").innerText="OFF";});
 }
 
 function updateChart(data){
 
-    const chartData = {
-        labels:["soil","temp","humidity"],
-        datasets:[{
-            label:"Sensor Data",
-            data:[
-                Number(data.soil) || 0,
-                Number(data.temp) || 0,
-                Number(data.humidity) || 0
-            ]
-        }]
-    };
+const values=[data.temp,data.humidity,data.soil];
 
-    if(chart){
-        chart.data = chartData;
-        chart.update();
-    }else{
-        chart = new Chart(document.getElementById("chart"),{
-            type:"bar",
-            data:chartData
-        });
-    }
+if(chart){
+chart.data.datasets[0].data=values;
+chart.update();
+}else{
+chart=new Chart(document.getElementById("chart"),{
+type:"bar",
+data:{
+labels:["Temp","Humidity","Soil"],
+datasets:[{label:"Sensor Data",data:values}]
+}
+});
 }
 
-function loadData(){
-    fetch('/sensor-data')
-    .then(res => res.json())
-    .then(data => {
-        console.log("FRONTEND DATA:", data); // 👈 debug
-        updateUI(data);
-        updateChart(data);
-    });
 }
 
-setInterval(loadData, 2000);
+setInterval(loadData,2000);
 loadData();
 
 </script>
