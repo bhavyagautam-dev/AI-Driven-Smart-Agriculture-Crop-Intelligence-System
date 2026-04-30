@@ -1,9 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AI Smart Agriculture</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>AI Smart Agriculture</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: #1e293b;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #22c55e;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 15px;
+            color: #22c55e;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -21,15 +81,15 @@
 <!-- Main -->
 <div class="container">
 
-    <!-- Sensor Card -->
+    <!-- Sensor Data -->
     <div class="card">
         <h3>📊 Sensor Data</h3>
-        <p>Temp: <span id="temp"></span> °C</p>
-        <p>Humidity: <span id="hum"></span> %</p>
-        <p>Soil: <span id="soil"></span> %</p>
+        <p>🌡 Temp: <span id="temp">--</span> °C</p>
+        <p>💧 Humidity: <span id="humidity">--</span> %</p>
+        <p>🌱 Soil: <span id="soil">--</span></p>
     </div>
 
-    <!-- Form Card -->
+    <!-- Prediction -->
     <div class="card">
         <h3>🌾 Crop Prediction</h3>
 
@@ -48,12 +108,12 @@
 
         {% if prediction %}
         <div class="result">
-            🌾 {{ prediction }}
+            🌾 Recommended Crop: {{ prediction }}
         </div>
         {% endif %}
     </div>
 
-    <!-- Graph Card -->
+    <!-- Graph -->
     <div class="card">
         <h3>📈 Live Graph</h3>
         <canvas id="chart"></canvas>
@@ -63,20 +123,26 @@
 
 <!-- JS -->
 <script>
+
 let chart;
 
 function updateUI(data){
-    document.getElementById("temp").innerText = data.temperature;
-    document.getElementById("hum").innerText = data.humidity;
-    document.getElementById("soil").innerText = data.soil_moisture;
+    document.getElementById("temp").innerText = data.temp || 0;
+    document.getElementById("humidity").innerText = data.humidity || 0;
+    document.getElementById("soil").innerText = data.soil || 0;
 }
 
 function updateChart(data){
+
     const chartData = {
-        labels:["Temp","Humidity","Soil"],
+        labels:["soil","temp","humidity"],
         datasets:[{
-            label:"Sensor",
-            data:[data.temperature, data.humidity, data.soil_moisture]
+            label:"Sensor Data",
+            data:[
+                Number(data.soil) || 0,
+                Number(data.temp) || 0,
+                Number(data.humidity) || 0
+            ]
         }]
     };
 
@@ -93,14 +159,17 @@ function updateChart(data){
 
 function loadData(){
     fetch('/sensor-data')
-    .then(res=>res.json())
-    .then(data=>{
+    .then(res => res.json())
+    .then(data => {
+        console.log("FRONTEND DATA:", data); // 👈 debug
         updateUI(data);
         updateChart(data);
     });
 }
 
-setInterval(loadData,2000);
+setInterval(loadData, 2000);
+loadData();
+
 </script>
 
 </body>
